@@ -3,20 +3,23 @@
 #include "DD_RCDefinition.h"
 #include "SystemTaskManager.h"
 #include <stdlib.h>
+#include "message.h"
 #include "MW_GPIO.h"
 #include "MW_IWDG.h"
-#include "message.h"
 #include "MW_flash.h"
 #include "constManager.h"
+#include "trapezoid_ctrl.h"
 
 /*suspensionSystem*/
 static
 int suspensionSystem(void);
-/*ABSystem*/
-static 
-int ABSystem(void);
+
 static
-int LEDSystem(void);
+int windlassRotate(void);
+
+static
+int armSystem(void);
+
 /*メモ
  *g_ab_h...ABのハンドラ
  *g_md_h...MDのハンドラ
@@ -24,9 +27,47 @@ int LEDSystem(void);
  *g_rc_data...RCのデータ
  */
 
+#define WRITE_ADDR (const void*)(0x8000000+0x400*(128-1))/*128[KiB]*/
+flashError_t checkFlashWrite(void){
+  const char data[]="HelloWorld!!TestDatas!!!\n"
+    "however you like this microcomputer, you don`t be kind to this computer.";
+  return MW_flashWrite(data,WRITE_ADDR,sizeof(data));
+}
+
 int appInit(void){
+  message("msg","hell");
+
+  /* switch(checkFlashWrite()){ */
+  /* case MW_FLASH_OK: */
+  /*   message("msg","FLASH WRITE TEST SUCCESS\n%s",(const char*)WRITE_ADDR); */
+  /*   break; */
+  /* case MW_FLASH_LOCK_FAILURE: */
+  /*   message("err","FLASH WRITE TEST LOCK FAILURE\n"); */
+  /*   break; */
+  /* case MW_FLASH_UNLOCK_FAILURE: */
+  /*   message("err","FLASH WRITE TEST UNLOCK FAILURE\n"); */
+  /*   break; */
+  /* case MW_FLASH_ERASE_VERIFY_FAILURE: */
+  /*   message("err","FLASH ERASE VERIFY FAILURE\n"); */
+  /*   break; */
+  /* case MW_FLASH_ERASE_FAILURE: */
+  /*   message("err","FLASH ERASE FAILURE\n"); */
+  /*   break; */
+  /* case MW_FLASH_WRITE_VERIFY_FAILURE: */
+  /*   message("err","FLASH WRITE TEST VERIFY FAILURE\n"); */
+  /*   break; */
+  /* case MW_FLASH_WRITE_FAILURE: */
+  /*   message("err","FLASH WRITE TEST FAILURE\n"); */
+  /*   break;         */
+  /* default: */
+  /*   message("err","FLASH WRITE TEST UNKNOWN FAILURE\n"); */
+  /*   break; */
+  /* } */
+  /* flush(); */
 
   ad_init();
+
+  message("msg","plz confirm\n%d\n",g_adjust.rightadjust.value);
 
   /*GPIO の設定などでMW,GPIOではHALを叩く*/
   return EXIT_SUCCESS;
@@ -39,8 +80,7 @@ int appTask(void){
   if(__RC_ISPRESSED_R1(g_rc_data)&&__RC_ISPRESSED_R2(g_rc_data)&&
      __RC_ISPRESSED_L1(g_rc_data)&&__RC_ISPRESSED_L2(g_rc_data)){
     while(__RC_ISPRESSED_R1(g_rc_data)||__RC_ISPRESSED_R2(g_rc_data)||
-	  __RC_ISPRESSED_L1(g_rc_data)||__RC_ISPRESSED_L2(g_rc_data))
-        SY_wait(10);
+	  __RC_ISPRESSED_L1(g_rc_data)||__RC_ISPRESSED_L2(g_rc_data));
     ad_main();
   }
   
@@ -50,45 +90,17 @@ int appTask(void){
   if(ret){
     return ret;
   }
-
-  ret = ABSystem();
+  
+  ret = windlassRotate();
   if(ret){
     return ret;
   }
 
-  ret = LEDSystem();
+  ret = armSystem();
   if(ret){
     return ret;
   }
-     
-  return EXIT_SUCCESS;
-}
-
-static int LEDSystem(void){
-  if(__RC_ISPRESSED_UP(g_rc_data)){
-    g_led_mode = lmode_1;
-  }
-  if(__RC_ISPRESSED_DOWN(g_rc_data)){
-    g_led_mode = lmode_2;
-  }
-  if(__RC_ISPRESSED_RIGHT(g_rc_data)){
-    g_led_mode = lmode_3;
-  }
-
-  return EXIT_SUCCESS;
-}
-
-static 
-int ABSystem(void){
-
-  g_ab_h[0].dat = 0x00;
-  if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
-    g_ab_h[0].dat |= AB0;
-  }
-  if(__RC_ISPRESSED_CROSS(g_rc_data)){
-    g_ab_h[0].dat |= AB1;
-  }
-
+  
   return EXIT_SUCCESS;
 }
 
@@ -96,42 +108,148 @@ int ABSystem(void){
 /*プライベート 足回りシステム*/
 static
 int suspensionSystem(void){
-  const int num_of_motor = 2;/*モータの個数*/
-  int rc_analogdata;/*アナログデータ*/
+  const int num_of_motor = 4;/*モータの個数*/
+  //  int rc_analogdata;/*アナログデータ*/
   unsigned int idx;/*インデックス*/
-  int i;
+  int i,m,x,y,w;
+
+  const tc_const_t tc ={
+    .inc_con = 100,
+    .dec_con = 225,
+  };
+
+  x = DD_RCGetLY(g_rc_data);
+  y = DD_RCGetLX(g_rc_data);
+  w = DD_RCGetRX(g_rc_data);
 
   /*for each motor*/
   for(i=0;i<num_of_motor;i++){
     /*それぞれの差分*/
     switch(i){
     case 0:
-      rc_analogdata = DD_RCGetRY(g_rc_data);
-      idx = MECHA1_MD1;
+      idx = MECHA1_MD0;
+      m =  x + y + w;
       break;
     case 1:
-      rc_analogdata = DD_RCGetLY(g_rc_data);
+      idx = MECHA1_MD1;
+      m =  x - y + w;
+      break;     
+    case 2:
       idx = MECHA1_MD2;
+      m = - x - y + w;
       break;
-    default:return EXIT_FAILURE;
+    case 3:
+      idx = MECHA1_MD3;
+      m = - x + y + w;
+      break;
+    
+    default:
+      return EXIT_FAILURE;
+    }
+   
+    trapezoidCtrl(m * MD_GAIN,&g_md_h[idx],&tc);
+  }
+
+  return EXIT_SUCCESS;
+}
+
+
+
+/* 腕振り */
+static
+int armSystem(void){
+  const tc_const_t arm_tcon ={
+    .inc_con = 100,
+    .dec_con = 200
+  };
+
+  /* 腕振り部のduty */
+  int arm_target = 0;
+  const int arm_up_duty = MD_ARM_UP_DUTY;
+  const int arm_down_duty = MD_ARM_DOWN_DUTY;
+
+  /* コントローラのボタンは押されてるか */
+  if(__RC_ISPRESSED_R1(g_rc_data)){
+    arm_target = arm_up_duty;
+    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
+  }else if(__RC_ISPRESSED_R2(g_rc_data)){
+    arm_target = arm_down_duty;
+    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
+  }else{
+    arm_target = 0;
+    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
+  }
+
+  if(__RC_ISPRESSED_L1(g_rc_data)){
+    arm_target = arm_up_duty;
+    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
+  }else if(__RC_ISPRESSED_L2(g_rc_data)){
+    arm_target = arm_down_duty;
+    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
+  }else{
+    arm_target = 0;
+    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
+  }
+
+  /* リミットスイッチは押されたか */
+  /*if(!_IS_PRESSED_RIGHTUPPER_LIMITSW()){
+    arm_target = 0;
+    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
+    }else if(!_IS_PRESSED_LEFTUPPER_LIMITSW()){
+    arm_target = 0;
+    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
     }
 
-    /*これは中央か?*/
-    if(abs(rc_analogdata)==0){
-      g_md_h[idx].mode = D_MMOD_FREE;
-      g_md_h[idx].duty = 0;
+    if(!_IS_PRESSED_RIGHTDOWNER_LIMITSW()){
+    arm_target = 0;
+    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
+    }else if(!_IS_PRESSED_LEFTDOWNER_LIMITSW()){
+    arm_target = 0;
+    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
     }
-    else{
-      if(rc_analogdata > 0){
-	/*前後の向き判定*/
-	g_md_h[idx].mode = D_MMOD_FORWARD;
-      }
-      else{
-	g_md_h[idx].mode = D_MMOD_BACKWARD;
-      }
-      /*絶対値を取りDutyに格納*/
-      g_md_h[idx].duty = abs(rc_analogdata) * MD_GAIN;
-    }
+  */
+  return EXIT_SUCCESS;
+}
+
+/* 秘密道具の移動部（上下＆左右） */
+static
+int windlassRotate(void){
+  const tc_const_t windlass_tcon ={
+    .inc_con = 150,
+    .dec_con = 1000
+  };
+
+  /* 秘密道具の移動部のduty */
+  int windlass_target = 0;
+  const int up_duty = MD_UP_DUTY;
+  const int side_duty = MD_SIDE_DUTY;
+
+
+  /* コントローラのボタンは押されてるか */
+  if(__RC_ISPRESSED_TRIANGLE(g_rc_data)){
+    windlass_target = up_duty;
+  }else if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
+    windlass_target = side_duty;
+  }else{
+    windlass_target = 0;
+  }
+
+  /* リミットスイッチは押されたか */
+  if(!_IS_PRESSED_VERTICAL_LIMITSW()){
+    windlass_target = 0;
+  }else if(!_IS_PRESSED_SIDE_LIMITSW()){
+    windlass_target = 0;
+  }
+  
+
+  /* 台形制御 */
+  if(windlass_target == up_duty){
+    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD6],&windlass_tcon);
+  }else if(windlass_target == side_duty){
+    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD7],&windlass_tcon);
+  }else if(windlass_target == 0){
+    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD6],&windlass_tcon);
+    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD7],&windlass_tcon);
   }
 
   return EXIT_SUCCESS;

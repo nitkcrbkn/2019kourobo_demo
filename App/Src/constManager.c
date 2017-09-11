@@ -77,8 +77,24 @@ static const adjust_t defaultad={
     .minvalue = 2,
     .display_name = "rc cntr theres",
     .display_unit = "/16",
+    },
+
+  /*  .arm_duty = {
+    .value = 0,
+    .maxvalue = 100,
+    .minvalue = 0,
+    .display_name = "arm duty",
+    .display_unit = "%",
+  },  
+
+  .winslass_duty = {
+    .value = 0,
+    .maxvalue = 100,
+    .minvalue = 0,
+    .display_name = "windlass duty",
+    .display_unit = "%",
   },
-  
+  */
   /*template
   . = {
     .value = ,
@@ -103,6 +119,8 @@ const_element_t *editlist[_EDITLIST_NUM]={
   &(g_adjust.rc_centre_thereshold3),
   &(g_adjust.rc_centre_thereshold4),
   &(g_adjust.rc_centre_thereshold5),
+  &(g_adjust.arm_duty),
+  &(g_adjust.windlass_duty),
 };
 
 static

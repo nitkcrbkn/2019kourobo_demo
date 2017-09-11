@@ -33,6 +33,8 @@ typedef struct {
   const_element_t rc_centre_thereshold3;
   const_element_t rc_centre_thereshold4;
   const_element_t rc_centre_thereshold5;
+  const_element_t arm_duty;
+  const_element_t windlass_duty;
 } adjust_t;
 
 extern adjust_t g_adjust;
