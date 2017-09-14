@@ -15,10 +15,10 @@ static
 int suspensionSystem(void);
 
 static
-int windlassRotate(void);
+int armSystem(void);
 
 static
-int armSystem(void);
+int bodyRotate(void);
 
 /*メモ
  *g_ab_h...ABのハンドラ
@@ -91,12 +91,12 @@ int appTask(void){
     return ret;
   }
   
-  ret = windlassRotate();
+  ret = armSystem();
   if(ret){
     return ret;
   }
 
-  ret = armSystem();
+  ret = bodyRotate();
   if(ret){
     return ret;
   }
@@ -109,18 +109,14 @@ int appTask(void){
 static
 int suspensionSystem(void){
   const int num_of_motor = 4;/*モータの個数*/
-  //  int rc_analogdata;/*アナログデータ*/
+  int rc_analogdata;/*アナログデータ*/
   unsigned int idx;/*インデックス*/
-  int i,m,x,y,w;
+  int i,;
 
   const tc_const_t tc ={
     .inc_con = 100,
     .dec_con = 225,
   };
-
-  x = DD_RCGetLY(g_rc_data);
-  y = DD_RCGetLX(g_rc_data);
-  w = DD_RCGetRX(g_rc_data);
 
   /*for each motor*/
   for(i=0;i<num_of_motor;i++){
@@ -128,26 +124,18 @@ int suspensionSystem(void){
     switch(i){
     case 0:
       idx = MECHA1_MD0;
-      m =  x + y + w;
+      rc_analogdata = DD_RCGetRX(g_rc_data);
       break;
     case 1:
       idx = MECHA1_MD1;
-      m =  x - y + w;
+      rc_analogdata = DD_RCGetLY(g_rc_data);
       break;     
-    case 2:
-      idx = MECHA1_MD2;
-      m = - x - y + w;
-      break;
-    case 3:
-      idx = MECHA1_MD3;
-      m = - x + y + w;
-      break;
     
     default:
       return EXIT_FAILURE;
     }
    
-    trapezoidCtrl(m * MD_GAIN,&g_md_h[idx],&tc);
+    trapezoidCtrl(rc_analogdata * MD_GAIN,&g_md_h[idx],&tc);
   }
 
   return EXIT_SUCCESS;
@@ -165,91 +153,56 @@ int armSystem(void){
 
   /* 腕振り部のduty */
   int arm_target = 0;
-  const int arm_up_duty = MD_ARM_UP_DUTY;
-  const int arm_down_duty = MD_ARM_DOWN_DUTY;
+  const int arm_duty = MD_ARM_DUTY;
 
   /* コントローラのボタンは押されてるか */
-  if(__RC_ISPRESSED_R1(g_rc_data)){
-    arm_target = arm_up_duty;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
-  }else if(__RC_ISPRESSED_R2(g_rc_data)){
-    arm_target = arm_down_duty;
-    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
+  if(__RC_ISPRESSED_L2(g_rc_data)){
+    trapezoidCtrl = arm_duty;
+    if(!__RC_ISPRESSED_L2(g_rc_data)){
+      trapezoidCtrl = arm_duty;
+    }else{
+      trapezoidCtrl = arm_duty;
+    }
+  }else if(!__RC_ISPRESSED_L2(g_rc_data)){
+    trapezoidCtrl = arm_duty;
   }else{
-    arm_target = 0;
+    trapezoidCtrl = 0;
+  }
+
+  /* 台形制御 */
+  if(trapezoidCtrl = arm_duty || trapezoidCtrl = 0){
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
   }
 
-  if(__RC_ISPRESSED_L1(g_rc_data)){
-    arm_target = arm_up_duty;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
-  }else if(__RC_ISPRESSED_L2(g_rc_data)){
-    arm_target = arm_down_duty;
-    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
-  }else{
-    arm_target = 0;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
-  }
-
-  /* リミットスイッチは押されたか */
-  /*if(!_IS_PRESSED_RIGHTUPPER_LIMITSW()){
-    arm_target = 0;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
-    }else if(!_IS_PRESSED_LEFTUPPER_LIMITSW()){
-    arm_target = 0;
-    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
-    }
-
-    if(!_IS_PRESSED_RIGHTDOWNER_LIMITSW()){
-    arm_target = 0;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
-    }else if(!_IS_PRESSED_LEFTDOWNER_LIMITSW()){
-    arm_target = 0;
-    trapezoidCtrl(-arm_target,&g_md_h[MECHA1_MD5],&arm_tcon);
-    }
-  */
   return EXIT_SUCCESS;
 }
 
-/* 秘密道具の移動部（上下＆左右） */
+/* 上部回転部 */
 static
-int windlassRotate(void){
-  const tc_const_t windlass_tcon ={
-    .inc_con = 150,
-    .dec_con = 1000
+int bodyRotate(void){
+  const tc_const_t body_tcon = {
+    .int_con = 200,
+    .dec_con = 200
   };
 
-  /* 秘密道具の移動部のduty */
-  int windlass_target = 0;
-  const int up_duty = MD_UP_DUTY;
-  const int side_duty = MD_SIDE_DUTY;
-
+  /* 上部回転部のduty */
+  int body_target = 0;
+  const int turn_right_duty = MD_TURN_RIGHT_DUTY;
+  const int turn_left_duty = MD_TURN_LEFT_DUTY;
 
   /* コントローラのボタンは押されてるか */
-  if(__RC_ISPRESSED_TRIANGLE(g_rc_data)){
-    windlass_target = up_duty;
-  }else if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
-    windlass_target = side_duty;
+  if(__RC_ISPRESSED_R1(g_rc_data)){
+    body_target = turn_right_duty;
+  }else if(__RC_ISPRESSED_L1(g_rc_dara)){
+    body_targat = turn_left_duty;
   }else{
-    windlass_target = 0;
+    body_target = 0;
   }
-
-  /* リミットスイッチは押されたか */
-  if(!_IS_PRESSED_VERTICAL_LIMITSW()){
-    windlass_target = 0;
-  }else if(!_IS_PRESSED_SIDE_LIMITSW()){
-    windlass_target = 0;
-  }
-  
 
   /* 台形制御 */
-  if(windlass_target == up_duty){
-    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD6],&windlass_tcon);
-  }else if(windlass_target == side_duty){
-    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD7],&windlass_tcon);
-  }else if(windlass_target == 0){
-    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD6],&windlass_tcon);
-    trapezoidCtrl(windlass_target,&g_md_h[MECHA1_MD7],&windlass_tcon);
+  if(body_target = turn_right_duty || body_target = turn_left_duty 
+     || body_target = 0){
+    trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
   }
 
   return EXIT_SUCCESS;
