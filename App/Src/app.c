@@ -157,19 +157,18 @@ int armSystem(void){
 
   /* コントローラのボタンは押されてるか */
   if(__RC_ISPRESSED_L2(g_rc_data)){
-    trapezoidCtrl = arm_duty;
-  }else if(!__RC_ISPRESSED_L2(g_rc_data)){
-    trapezoidCtrl = arm_duty;
-  }else{
-    trapezoidCtrl = 0;
+    while(!__RC_ISPRESSED_L2(g_rc_data)){
+      trapezoidCtrl = arm_duty;
+      if(__RC_ISPRESSED_L2(g_rc_data)){
+	break;
+      }
+    }
   }
-
+  
   /* 台形制御 */
-  if(trapezoidCtrl = arm_duty || trapezoidCtrl = 0){
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
- }
+  trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
 
-return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 
 /* 上部回転部 */
@@ -195,10 +194,7 @@ int bodyRotate(void){
   }
 
   /* 台形制御 */
-  if(body_target = turn_right_duty || body_target = turn_left_duty 
-     || body_target = 0){
-    trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
-  }
+  trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
 
   return EXIT_SUCCESS;
 }
