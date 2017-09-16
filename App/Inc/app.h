@@ -12,7 +12,7 @@ int appInit(void);
 
 #define DD_NUM_OF_MD 5
 #define DD_NUM_OF_AB 0
-#define DD_NUM_OF_SV 1
+#define DD_NUM_OF_SV 0
 
 /* 駆動用モータ */
 #define MECHA1_MD0 0
@@ -31,5 +31,10 @@ int appInit(void);
 /* 腕振り用モータのduty */
 #define _ARM_DUTY (DD_MD_MAX_DUTY-1)
 #define MD_ARM_DUTY _ARM_DUTY
+
+/* 上部回転用のモータ */
+#define _ROTATE_DUTY (DD_MD_MAX_DUTY-1)
+#define MD_TURN_RIGHT_DUTY -_ROTATE_DUTY
+#define MD_TURN_LEFT_DUTY _ROTATE_DUTY
 
 #endif

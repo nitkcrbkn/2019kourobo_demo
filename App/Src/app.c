@@ -111,7 +111,7 @@ int suspensionSystem(void){
   const int num_of_motor = 4;/*モータの個数*/
   int rc_analogdata;/*アナログデータ*/
   unsigned int idx;/*インデックス*/
-  int i,;
+  int i;
 
   const tc_const_t tc ={
     .inc_con = 100,
@@ -158,7 +158,7 @@ int armSystem(void){
   /* コントローラのボタンは押されてるか */
   if(__RC_ISPRESSED_L2(g_rc_data)){
     while(!__RC_ISPRESSED_L2(g_rc_data)){
-      trapezoidCtrl = arm_duty;
+      arm_target = arm_duty;
       if(__RC_ISPRESSED_L2(g_rc_data)){
 	break;
       }
@@ -175,7 +175,7 @@ int armSystem(void){
 static
 int bodyRotate(void){
   const tc_const_t body_tcon = {
-    .int_con = 200,
+    .inc_con = 200,
     .dec_con = 200
   };
 
@@ -187,8 +187,8 @@ int bodyRotate(void){
   /* コントローラのボタンは押されてるか */
   if(__RC_ISPRESSED_R1(g_rc_data)){
     body_target = turn_right_duty;
-  }else if(__RC_ISPRESSED_L1(g_rc_dara)){
-    body_targat = turn_left_duty;
+  }else if(__RC_ISPRESSED_L1(g_rc_data)){
+    body_target = turn_left_duty;
   }else{
     body_target = 0;
   }
