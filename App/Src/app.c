@@ -124,7 +124,7 @@ int suspensionSystem(void){
     switch(i){
     case 0:
       idx = MECHA1_MD0;
-      rc_analogdata = DD_RCGetRX(g_rc_data);
+      rc_analogdata = DD_RCGetRY(g_rc_data);
       break;
     case 1:
       idx = MECHA1_MD1;
@@ -152,21 +152,23 @@ int armSystem(void){
   };
 
   /* 腕振り部のduty */
-  int arm_target = 0;
-  const int arm_duty = MD_ARM_DUTY;
+  int arm_target;
+  //  const int arm_duty = MD_ARM_DUTY;
+  unsigned int idx;
+  idx = MECHA1_MD2;
 
   /* コントローラのボタンは押されてるか */
   if(__RC_ISPRESSED_L2(g_rc_data)){
-    while(!__RC_ISPRESSED_L2(g_rc_data)){
-      arm_target = arm_duty;
-      if(__RC_ISPRESSED_L2(g_rc_data)){
+    //while(!__RC_ISPRESSED_L2(g_rc_data)){
+      arm_target = 8000;
+      /*if(__RC_ISPRESSED_L2(g_rc_data)){
 	break;
       }
-    }
+      }*/
   }
   
   /* 台形制御 */
-  trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD4],&arm_tcon);
+  trapezoidCtrl(arm_target,&g_md_h[idx],&arm_tcon);
 
   return EXIT_SUCCESS;
 }
@@ -180,7 +182,7 @@ int bodyRotate(void){
   };
 
   /* 上部回転部のduty */
-  int body_target = 0;
+  int body_target;
   const int turn_right_duty = MD_TURN_RIGHT_DUTY;
   const int turn_left_duty = MD_TURN_LEFT_DUTY;
 
@@ -194,7 +196,7 @@ int bodyRotate(void){
   }
 
   /* 台形制御 */
-  trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
+  trapezoidCtrl(body_target,&g_md_h[MECHA1_MD3],&body_tcon);
 
   return EXIT_SUCCESS;
 }
