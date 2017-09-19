@@ -159,12 +159,14 @@ int armSystem(void){
 
   /* コントローラのボタンは押されてるか */
   if(__RC_ISPRESSED_L2(g_rc_data)){
-    //while(!__RC_ISPRESSED_L2(g_rc_data)){
+    while(!__RC_ISPRESSED_L2(g_rc_data)){
       arm_target = 8000;
-      /*if(__RC_ISPRESSED_L2(g_rc_data)){
-	break;
+    }
+    if(__RC_ISPRESSED_L2(g_rc_data)){
+      while(!__RC_ISPRESSED_L2(g_rc_data)){
+	arm_target = 0;
       }
-      }*/
+    }
   }
   
   /* 台形制御 */

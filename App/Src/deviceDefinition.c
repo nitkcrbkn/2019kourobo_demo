@@ -6,25 +6,25 @@
 #if DD_NUM_OF_MD
 /*MD Definition*/
 DD_MDHand_t g_md_h[DD_NUM_OF_MD] = {
-  { 0x10, /* address */
-    0, /* default duty */
-    D_MMOD_FREE, /* mode */
+  { .add = 0x10, /* address */
+    .duty = 0, /* default duty */
+    .mode = D_MMOD_FREE, /* mode */
   },
-  { 0x11, /* address */
-    0, /* default duty */
-    D_MMOD_FREE, /* mode */
+  { .add = 0x11, /* address */
+    .duty = 0, /* default duty */
+    .mode = D_MMOD_FREE, /* mode */
   },
-  { 0x12, 
-    0, /* default duty */
-    D_MMOD_FREE, /* mode */
+  { .add = 0x12, 
+    .duty = 0, /* default duty */
+    .mode = D_MMOD_FREE, /* mode */
   },
-  { 0x13,
-    0, /* default duty */
-    D_MMOD_FREE, /* mode */
+  { .add = 0x13,
+    .duty = 0, /* default duty */
+    .mode = D_MMOD_FREE, /* mode */
   },
-  { 0x14,
-    0, /* default duty */
-    D_MMOD_FREE, /* mode */
+  { .add = 0x14,
+    .duty = 0, /* default duty */
+    .mode = D_MMOD_FREE, /* mode */
   },
 };
 #endif
