@@ -152,15 +152,15 @@ int armSystem(void){
   };
 
   /* 腕振り部のduty */
-  int arm_target;
-  //  const int arm_duty = MD_ARM_DUTY;
+  int arm_target = 0;
+  const int arm_duty = MD_ARM_DUTY;
   unsigned int idx;
   idx = MECHA1_MD2;
 
   /* コントローラのボタンは押されてるか */
   if(__RC_ISPRESSED_L2(g_rc_data)){
     while(!__RC_ISPRESSED_L2(g_rc_data)){
-      arm_target = 8000;
+      arm_target = arm_duty;
     }
     if(__RC_ISPRESSED_L2(g_rc_data)){
       while(!__RC_ISPRESSED_L2(g_rc_data)){
@@ -184,14 +184,14 @@ int bodyRotate(void){
   };
 
   /* 上部回転部のduty */
-  int body_target;
+  int body_target = 0;
   const int turn_right_duty = MD_TURN_RIGHT_DUTY;
   const int turn_left_duty = MD_TURN_LEFT_DUTY;
 
   /* コントローラのボタンは押されてるか */
-  if(__RC_ISPRESSED_R1(g_rc_data)){
+  if( __RC_ISPRESSED_R1(g_rc_data)){
     body_target = turn_right_duty;
-  }else if(__RC_ISPRESSED_L1(g_rc_data)){
+  }else if( __RC_ISPRESSED_L1(g_rc_data)){
     body_target = turn_left_duty;
   }else{
     body_target = 0;
