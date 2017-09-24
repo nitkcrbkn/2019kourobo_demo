@@ -16,6 +16,7 @@
 #include "DD_Gene.h"
 #include "DD_MD.h"
 #include "DD_AB.h"
+#include "DD_SV.h"
 #include "DD_ENCODER.h"
 #include "message.h"
 
