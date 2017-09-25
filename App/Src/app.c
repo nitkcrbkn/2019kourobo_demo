@@ -90,12 +90,7 @@ int appTask(void){
 	  __RC_ISPRESSED_L1(g_rc_data)||__RC_ISPRESSED_L2(g_rc_data));
     ad_main();
   }
-  
-  ret = bodyRotate();
-  if(ret){
-    return ret;
-  }
-
+ 
   /*それぞれの機構ごとに処理をする*/
   /*途中必ず定数回で終了すること。*/
   ret = suspensionSystem();
@@ -107,7 +102,12 @@ int appTask(void){
   if(ret){
     return ret;
   }
-  
+ 
+  ret = bodyRotate();
+  if(ret){
+    return ret;
+  }
+ 
   ret = WorkLock();
   if(ret){
     return ret;
@@ -119,11 +119,11 @@ int appTask(void){
 
 /*プライベート 足回りシステム*/
 static
-  int suspensionSystem(void){
-const int num_of_motor = 2;/*モータの個数*/
-int rc_analogdata;/*アナログデータ*/
-unsigned int idx;/*インデックス*/
-int i;
+int suspensionSystem(void){
+  const int num_of_motor = 2;/*モータの個数*/
+  int rc_analogdata;/*アナログデータ*/
+  unsigned int idx;/*インデックス*/
+  int i;
 
   const tc_const_t tc ={
     .inc_con = 100,
@@ -152,8 +152,6 @@ int i;
 
   return EXIT_SUCCESS;
 }
-    
-
 
 /* 腕振り */
 static
@@ -196,7 +194,6 @@ int armSystem(void){
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
   }
 
-
   return EXIT_SUCCESS;
 }
   
@@ -232,13 +229,13 @@ int bodyRotate(void){
 static
 int WorkLock(void){
 
-      if(__RC_ISPRESSED_R2(g_rc_data)){
+      if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
 	g_sv_h.val[0] = 350;
 	g_sv_h.val[1] = 350;
 	g_sv_h.val[2] = 350;
       }
       
-      if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
+      if(__RC_ISPRESSED_R2(g_rc_data)){
 	g_sv_h.val[0] = 150;
 	g_sv_h.val[1] = 150;
 	g_sv_h.val[2] = 150;
