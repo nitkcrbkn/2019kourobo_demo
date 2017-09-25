@@ -27,15 +27,15 @@ int appInit(void);
  
 #define CENTRAL_THRESHOLD 0
 
-#define MD_GAIN ( 9999 / DD_RC_ANALOG_MAX / 2 )
+#define MD_GAIN (DD_MD_MAX_DUTY  / DD_RC_ANALOG_MAX / 2 )
 
 /* 腕振り用モータのduty */
-#define _ARM_DUTY (9999)
-#define MD_ARM_DUTY 9999
+#define _ARM_DUTY (DD_MD_MAX_DUTY-1)
+#define MD_ARM_DUTY _ARM_DUTY
 
 /* 上部回転用のモータ */
-#define _ROTATE_DUTY (9999)
-#define MD_TURN_RIGHT_DUTY -9999
-#define MD_TURN_LEFT_DUTY 9999
+#define _ROTATE_DUTY (DD_MD_MAX_DUTY-1)
+#define MD_TURN_RIGHT_DUTY _ROTATE_DUTY
+#define MD_TURN_LEFT_DUTY -_ROTAE_DUTY
 
 #endif

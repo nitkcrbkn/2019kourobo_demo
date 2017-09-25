@@ -22,6 +22,7 @@ int bodyRotate(void);
 static
 int WorkLock(void);
 
+/* 腕振り部の変数 */
 int situation = 0;
 int checkpush = 0;
 int judgepush = 0;
@@ -164,10 +165,9 @@ int armSystem(void){
 
   /* 腕振り部のduty */
   int arm_target = 0;
-  const int arm_duty = 9999;
+  const int arm_duty = ARM_DUTY;
   
   /* コントローラのボタンは押されてるか */
-  
   if(!__RC_ISPRESSED_L2(g_rc_data)){
     judgepush = 1;
   }
@@ -182,7 +182,7 @@ int armSystem(void){
       situation = 1;
       break;
     }
-
+    
     judgepush = 0;
   }
 
