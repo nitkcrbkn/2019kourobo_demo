@@ -36,6 +36,6 @@ int appInit(void);
 /* 上部回転用のモータ */
 #define _ROTATE_DUTY (DD_MD_MAX_DUTY-1)
 #define MD_TURN_RIGHT_DUTY _ROTATE_DUTY
-#define MD_TURN_LEFT_DUTY -_ROTAE_DUTY
+#define MD_TURN_LEFT_DUTY -_ROTATE_DUTY
 
 #endif

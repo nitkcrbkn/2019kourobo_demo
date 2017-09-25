@@ -165,7 +165,7 @@ int armSystem(void){
 
   /* 腕振り部のduty */
   int arm_target = 0;
-  const int arm_duty = ARM_DUTY;
+  const int arm_duty = MD_ARM_DUTY;
   
   /* コントローラのボタンは押されてるか */
   if(!__RC_ISPRESSED_L2(g_rc_data)){
