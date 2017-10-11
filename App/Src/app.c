@@ -229,17 +229,21 @@ int bodyRotate(void){
 static
 int WorkLock(void){
 
-      if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
-	g_sv_h.val[0] = 350;
-	g_sv_h.val[1] = 350;
-	g_sv_h.val[2] = 350;
-      }
+  if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
+    g_sv_h.val[0] = 350;
+    g_sv_h.val[1] = 350;
+    g_sv_h.val[2] = 350;
+    g_sv_h.val[3] = 350;
+    g_sv_h.val[4] = 350;
+  }
       
-      if(__RC_ISPRESSED_R2(g_rc_data)){
-	g_sv_h.val[0] = 150;
-	g_sv_h.val[1] = 150;
-	g_sv_h.val[2] = 150;
-      }
+  if(__RC_ISPRESSED_R2(g_rc_data)){
+    g_sv_h.val[0] = 150;
+    g_sv_h.val[1] = 150;
+    g_sv_h.val[2] = 150;
+    g_sv_h.val[3] = 150;
+    g_sv_h.val[4] = 150;
+  }
 
   return EXIT_SUCCESS;
 }

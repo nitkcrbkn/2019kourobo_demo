@@ -6,7 +6,7 @@
 
 #define DD_NUM_OF_MD 5
 #define DD_NUM_OF_AB 0
-#define DD_NUM_OF_SV 3
+#define DD_NUM_OF_SV 5
 
 #include "DD_RC.h"
 #include "DD_MD.h"
