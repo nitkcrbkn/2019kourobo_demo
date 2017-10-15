@@ -229,7 +229,7 @@ int bodyRotate(void){
 static
 int WorkLock(void){
 
-  if(__RC_ISPRESSED_CIRCLE(g_rc_data)){
+  if(__RC_ISPRESSED_CROSS(g_rc_data)){
     g_sv_h.val[0] = 350;
     g_sv_h.val[1] = 350;
     g_sv_h.val[2] = 350;
@@ -237,7 +237,7 @@ int WorkLock(void){
     g_sv_h.val[4] = 350;
   }
       
-  if(__RC_ISPRESSED_R2(g_rc_data)){
+  if(__RC_ISPRESSED_R2(g_rc_data) && __RC_ISPRESSED_CIRCLE(g_rc_data)){
     g_sv_h.val[0] = 150;
     g_sv_h.val[1] = 150;
     g_sv_h.val[2] = 150;
