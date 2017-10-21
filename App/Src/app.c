@@ -163,7 +163,8 @@ int armSystem(void){
 
   /* 腕振り部のduty */
   int arm_target = 0;
-  const int arm_duty = MD_ARM_DUTY;
+  const int arm_front_duty = MD_ARM_FRONT_DUTY;
+  const int arm_back_duty = MD_ARM_BACK_DUTY;
   
   /* コントローラのボタンは押されてるか */
   if(!__RC_ISPRESSED_L2(g_rc_data)){
@@ -189,7 +190,7 @@ int armSystem(void){
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
   }else if(situation==1){
-    arm_target = arm_duty;
+    arm_target = arm_front_duty;
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
   }
@@ -229,7 +230,7 @@ int bodyRotate(void){
 static
 int WorkLock(void){
 
-  if(__RC_ISPRESSED_CROSS(g_rc_data)){
+  if(__RC_ISPRESSED_R2(g_rc_data) && __RC_ISPRESSED_CROSS(g_rc_data)){
     g_sv_h.val[0] = 350;
     g_sv_h.val[1] = 350;
     g_sv_h.val[2] = 350;
