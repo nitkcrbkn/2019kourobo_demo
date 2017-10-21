@@ -24,8 +24,11 @@ int WorkLock(void);
 
 /* 腕振り部の変数 */
 int situation = 0;
-int checkpush = 0;
 int judgepush = 0;
+
+/* モードチェンジ用変数 */
+int mode = 0;
+int checkpush = 0;
 
 /*メモ
  *g_ab_h...ABのハンドラ
@@ -130,26 +133,65 @@ int suspensionSystem(void){
     .dec_con = 225,
   };
 
-  /*for each motor*/
-  for(i=0;i<num_of_motor;i++){
-    /*それぞれの差分*/
-    switch(i){
-    case 0:
-      idx = MECHA1_MD0;
-      rc_analogdata = DD_RCGetRY(g_rc_data);
-      break;
-    case 1:
-      idx = MECHA1_MD1;
-      rc_analogdata = -DD_RCGetLY(g_rc_data);
-      break;     
-    
-    default:
-      return EXIT_FAILURE;
-    }
-   
-    trapezoidCtrl(rc_analogdata * MD_GAIN,&g_md_h[idx],&tc);
+  /* コントローラのボタンは押されてるか */
+  if(!__RC_ISPRESSED_TRIANGLE(g_rc_data)){
+    checkpush = 1;
   }
 
+  if(__RC_ISPRESSED_TRIANGLE(g_rc_data) && checkpush == 1){
+    
+    switch(mode){
+    case 1:
+      mode = 0;
+      break;
+    case 0:
+      mode = 1;
+      break;
+    }
+    
+    checkpush = 0;
+  }
+
+  switch(mode){
+  case 0:
+    /*for each motor*/
+    for(i=0;i<num_of_motor;i++){
+      /*それぞれの差分*/
+      switch(i){
+      case 0:
+	idx = MECHA1_MD0;
+	rc_analogdata = DD_RCGetRY(g_rc_data);
+	break;
+      case 1:
+	idx = MECHA1_MD1;
+	rc_analogdata = -DD_RCGetLY(g_rc_data);
+	break;     
+     
+      default:
+	return EXIT_FAILURE;
+      }
+      trapezoidCtrl(rc_analogdata * MD_GAIN,&g_md_h[idx],&tc);
+    }
+    break;
+  case 1:
+    for(i=0;i<num_of_motor;i++){
+      switch(i){
+      case 0:
+	idx = MECHA1_MD1;
+	rc_analogdata = -DD_RCGetRY(g_rc_data);
+	break;
+      case 1:
+	idx = MECHA1_MD0;
+	rc_analogdata = DD_RCGetLY(g_rc_data);
+	break;     
+    
+      default:
+	return EXIT_FAILURE;
+      }
+      trapezoidCtrl(rc_analogdata * MD_GAIN,&g_md_h[idx],&tc);
+    }
+    break;
+  }
   return EXIT_SUCCESS;
 }
 
@@ -163,8 +205,7 @@ int armSystem(void){
 
   /* 腕振り部のduty */
   int arm_target = 0;
-  const int arm_front_duty = MD_ARM_FRONT_DUTY;
-  const int arm_back_duty = MD_ARM_BACK_DUTY;
+  const int arm_duty = MD_ARM_DUTY;
   
   /* コントローラのボタンは押されてるか */
   if(!__RC_ISPRESSED_L2(g_rc_data)){
@@ -190,7 +231,7 @@ int armSystem(void){
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
   }else if(situation==1){
-    arm_target = arm_front_duty;
+    arm_target = arm_duty;
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
     trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
   }
