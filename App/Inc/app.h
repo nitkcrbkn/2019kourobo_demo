@@ -23,7 +23,6 @@ int appInit(void);
 #define MECHA1_MD3 3
 /* 上部回転用モータ */
 #define MECHA1_MD4 4
-
  
 #define CENTRAL_THRESHOLD 0
 

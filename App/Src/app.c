@@ -178,11 +178,11 @@ int suspensionSystem(void){
       switch(i){
       case 0:
 	idx = MECHA1_MD1;
-	rc_analogdata = -DD_RCGetRY(g_rc_data);
+	rc_analogdata = DD_RCGetRY(g_rc_data);
 	break;
       case 1:
 	idx = MECHA1_MD0;
-	rc_analogdata = DD_RCGetLY(g_rc_data);
+	rc_analogdata = -DD_RCGetLY(g_rc_data);
 	break;     
     
       default:
