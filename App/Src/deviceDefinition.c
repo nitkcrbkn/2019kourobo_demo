@@ -15,17 +15,18 @@ DD_MDHand_t g_md_h[DD_NUM_OF_MD] = {
     .mode = D_MMOD_FREE, /* mode */
   },
   { .add = 0x12, 
-    .duty = 0, /* default duty */
-    .mode = D_MMOD_FREE, /* mode */
+      .duty = 0, // default duty 
+    .mode = D_MMOD_FREE, // mode 
   },
   { .add = 0x13,
-    .duty = 0, /* default duty */
-    .mode = D_MMOD_FREE, /* mode */
+    .duty = 0, // default duty
+    .mode = D_MMOD_FREE, // mode 
   },
-  { .add = 0x14,
-    .duty = 0, /* default duty */
-    .mode = D_MMOD_FREE, /* mode */
+  /*  { .add = 0x14,
+    .duty = 0,
+    .mode = D_MMOD_FREE,
   },
+  */
 };
 #endif
 #if DD_NUM_OF_AB

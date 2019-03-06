@@ -4,9 +4,9 @@
 /*NO Device mode*/
 #define _NO_DEVICE 0
 
-#define DD_NUM_OF_MD 5
+#define DD_NUM_OF_MD 4
 #define DD_NUM_OF_AB 0
-#define DD_NUM_OF_SV 5
+#define DD_NUM_OF_SV 0
 
 #include "DD_RC.h"
 #include "DD_MD.h"
@@ -22,7 +22,7 @@ int appInit(void);
 #define MECHA1_MD2 2
 #define MECHA1_MD3 3
 /* 上部回転用モータ */
-#define MECHA1_MD4 4
+//#define MECHA1_MD4 4
  
 #define CENTRAL_THRESHOLD 0
 
@@ -33,8 +33,11 @@ int appInit(void);
 #define MD_ARM_DUTY _ARM_DUTY
 
 /* 上部回転用のモータ */
-#define _ROTATE_DUTY (DD_MD_MAX_DUTY-1)
+#define _ROTATE_DUTY (DD_MD_MAX_DUTY-3000)
 #define MD_TURN_RIGHT_DUTY _ROTATE_DUTY
 #define MD_TURN_LEFT_DUTY -_ROTATE_DUTY
+//arm関連
+#define ARM1_DUTY 4000
+#define ARM2_DUTY 4000
 
 #endif

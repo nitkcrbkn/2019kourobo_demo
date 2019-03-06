@@ -10,17 +10,16 @@
 #include "constManager.h"
 #include "trapezoid_ctrl.h"
 /*suspensionSystem*/
+
+
 static
 int suspensionSystem(void);
 
 static
-int armSystem(void);
+int arm1System(void);
 
 static
-int bodyRotate(void);
-
-static
-int WorkLock(void);
+int arm2System(void);
 
 /* 腕振り部の変数 */
 int situation = 0;
@@ -87,35 +86,30 @@ int appInit(void){
 int appTask(void){
   int ret=0;
 
-  if(__RC_ISPRESSED_R1(g_rc_data)&&__RC_ISPRESSED_R2(g_rc_data)&&
+  /*if(__RC_ISPRESSED_R1(g_rc_data)&&__RC_ISPRESSED_R2(g_rc_data)&&
      __RC_ISPRESSED_L1(g_rc_data)&&__RC_ISPRESSED_L2(g_rc_data)){
     while(__RC_ISPRESSED_R1(g_rc_data)||__RC_ISPRESSED_R2(g_rc_data)||
 	  __RC_ISPRESSED_L1(g_rc_data)||__RC_ISPRESSED_L2(g_rc_data));
     ad_main();
-  }
- 
+    }*/
+	 
   /*それぞれの機構ごとに処理をする*/
   /*途中必ず定数回で終了すること。*/
   ret = suspensionSystem();
   if(ret){
     return ret;
   }
-  
-  ret = armSystem();
+	  
+  ret = arm1System();
   if(ret){
     return ret;
   }
- 
-  ret = bodyRotate();
+
+  ret = arm2System();
   if(ret){
     return ret;
   }
- 
-  ret = WorkLock();
-  if(ret){
-    return ret;
-  }
-  
+	 
   return EXIT_SUCCESS;
 }
 
@@ -136,10 +130,11 @@ int suspensionSystem(void){
   /* コントローラのボタンは押されてるか */
   if(!__RC_ISPRESSED_TRIANGLE(g_rc_data)){
     checkpush = 1;
-  }
+    }
+  
 
-  if(__RC_ISPRESSED_TRIANGLE(g_rc_data) && checkpush == 1){
-    
+  if(__RC_ISPRESSED_TRIANGLE(g_rc_data) && checkpush == 1 && !__RC_ISPRESSED_CROSS(g_rc_data)){
+	    
     switch(mode){
     case 1:
       mode = 0;
@@ -148,7 +143,7 @@ int suspensionSystem(void){
       mode = 1;
       break;
     }
-    
+	    
     checkpush = 0;
   }
 
@@ -166,7 +161,7 @@ int suspensionSystem(void){
 	idx = MECHA1_MD1;
 	rc_analogdata = -DD_RCGetLY(g_rc_data);
 	break;     
-     
+	     
       default:
 	return EXIT_FAILURE;
       }
@@ -184,7 +179,7 @@ int suspensionSystem(void){
 	idx = MECHA1_MD0;
 	rc_analogdata = -DD_RCGetLY(g_rc_data);
 	break;     
-    
+	    
       default:
 	return EXIT_FAILURE;
       }
@@ -195,97 +190,55 @@ int suspensionSystem(void){
   return EXIT_SUCCESS;
 }
 
-/* 腕振り */
+
+/* 機構1 */
 static
-int armSystem(void){
+int arm1System(void){
   const tc_const_t arm_tcon ={
     .inc_con = 100,
     .dec_con = 200,
   };
 
-  /* 腕振り部のduty */
+  /* 機構2のduty */
   int arm_target = 0;
-  const int arm_duty = MD_ARM_DUTY;
-  
-  /* コントローラのボタンは押されてるか */
-  if(!__RC_ISPRESSED_L2(g_rc_data)){
-    judgepush = 1;
-  }
-
-  if(__RC_ISPRESSED_L2(g_rc_data) && judgepush == 1){
-    
-    switch(situation){
-    case 1:
-      situation = 0;
-      break;
-    case 0:
-      situation = 1;
-      break;
-    }
-    
-    judgepush = 0;
-  }
-
-  if(situation==0){
-    arm_target = 0;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
-  }else if(situation==1){
+  const int arm_duty = ARM1_DUTY;
+	  
+  if(__RC_ISPRESSED_L1(g_rc_data)){
     arm_target = arm_duty;
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
-    trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
+  } else if(__RC_ISPRESSED_R1(g_rc_data)){
+    arm_target = -arm_duty;
+  }else{
+    arm_target = 0;
   }
+
+  trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD2],&arm_tcon);
+ 
 
   return EXIT_SUCCESS;
 }
-  
-/* 上部回転部 */
+
+/* 機構2 */
 static
-int bodyRotate(void){
-  const tc_const_t body_tcon = {
-    .inc_con = 200,
+int arm2System(void){
+  const tc_const_t arm_tcon ={
+    .inc_con = 100,
     .dec_con = 200,
   };
 
-  /* 上部回転部のduty */
-  int body_target = 0;
-  const int turn_right_duty = MD_TURN_RIGHT_DUTY;
-  const int turn_left_duty = MD_TURN_LEFT_DUTY;
-  
-  /* コントローラのボタンは押されてるか */
-  if(__RC_ISPRESSED_R1(g_rc_data)){
-    body_target = turn_right_duty;
-    trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
-  }else if(__RC_ISPRESSED_L1(g_rc_data)){
-    body_target = turn_left_duty;
-    trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
+  /* 機構2のduty */
+  int arm_target = 0;
+  const int arm_duty = ARM2_DUTY;
+	  
+  if(__RC_ISPRESSED_L2(g_rc_data)){
+    arm_target = arm_duty;
+  } else if(__RC_ISPRESSED_R2(g_rc_data)){
+    arm_target = -arm_duty;
   }else{
-    body_target = 0;
-    trapezoidCtrl(body_target,&g_md_h[MECHA1_MD4],&body_tcon);
+    arm_target = 0;
   }
 
-  return EXIT_SUCCESS;
-}
-  
-/* 飛行機3台同時発射 */
-static
-int WorkLock(void){
-
-  if(__RC_ISPRESSED_R2(g_rc_data) && __RC_ISPRESSED_CROSS(g_rc_data)){
-    g_sv_h.val[0] = 350;
-    g_sv_h.val[1] = 350;
-    g_sv_h.val[2] = 350;
-    g_sv_h.val[3] = 350;
-    g_sv_h.val[4] = 350;
-  }
-      
-  if(__RC_ISPRESSED_R2(g_rc_data) && __RC_ISPRESSED_CIRCLE(g_rc_data)){
-    g_sv_h.val[0] = 150;
-    g_sv_h.val[1] = 150;
-    g_sv_h.val[2] = 150;
-    g_sv_h.val[3] = 150;
-    g_sv_h.val[4] = 150;
-  }
+  trapezoidCtrl(arm_target,&g_md_h[MECHA1_MD3],&arm_tcon);
+ 
 
   return EXIT_SUCCESS;
 }
